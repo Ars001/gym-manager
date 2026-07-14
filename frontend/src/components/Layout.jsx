@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { initials } from '../config/branding';
+import TrialBanner from './TrialBanner.jsx';
 import {
   IconGrid, IconCalendar, IconTicket, IconUsers, IconTag,
   IconCheckSquare, IconCard, IconSettings, IconLogout, IconMenu, IconStore,
@@ -96,7 +97,10 @@ export default function Layout({ children }) {
       </aside>
 
       <div className="app-main">
-        <main className="content">{children}</main>
+        <main className="content">
+          <TrialBanner />
+          {children}
+        </main>
       </div>
     </div>
   );

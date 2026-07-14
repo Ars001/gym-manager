@@ -86,6 +86,7 @@ router.post('/register', async (req, res, next) => {
       slug = `${base}-${n}`;
     }
 
+    // New gyms get a 14-day free trial, counted from created_at (set now).
     const tenantRes = await query(
       `INSERT INTO tenants (slug, name, currency) VALUES ($1, $2, $3) RETURNING id`,
       [slug, gymName, currency || 'USD']

@@ -13,7 +13,7 @@ router.get('/', verifyToken, async (req, res, next) => {
   try {
     const result = await query(
       `SELECT id, slug, name, currency, primary_color, secondary_color,
-              logo_url, feature_flags
+              logo_url, feature_flags, created_at
          FROM tenants WHERE id = $1`,
       [req.tenantId]
     );

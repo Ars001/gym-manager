@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   -- new flags don't require a migration.
   feature_flags JSONB NOT NULL DEFAULT '{"retail_pos": false, "mobile_app": false, "multi_location": false}',
   stripe_account_id TEXT,                          -- reserved for future Stripe Connect
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()  -- also the free-trial start (trial = created_at + 14 days)
 );
 
 -- ---------------------------------------------------------------------------
