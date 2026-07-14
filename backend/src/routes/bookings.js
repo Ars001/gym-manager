@@ -10,17 +10,24 @@ const { verifyToken, requireRole } = require('../middleware/auth');
 const router = express.Router();
 router.use(verifyToken);
 
-// GET /api/bookings?session_id=  — bookings for a session (staff view / roster).
-router.get('/', requireRole('admin', 'staff'), async (req, res, next) => {
+// GET /api/bookings?session_id=&member_id=  — bookings for a session (staff
+// roster) or for a member. A member-role user can only ever see their own.
+router.get('/', async (req, res, next) => {
   try {
-    const { session_id } = req.query;
+    let { session_id, member_id } = req.query;
+    // Members are locked to their own bookings; staff/admin may filter freely.
+    if (req.role === 'member') member_id = req.memberId;
+
     const result = await query(
-      `SELECT b.*, m.first_name, m.last_name
-         FROM bookings b JOIN members m ON m.id = b.member_id
+      `SELECT b.*, m.first_name, m.last_name, s.title AS session_title, s.starts_at
+         FROM bookings b
+         JOIN members m ON m.id = b.member_id
+         JOIN sessions s ON s.id = b.session_id
         WHERE b.tenant_id = $1
           AND ($2::uuid IS NULL OR b.session_id = $2)
+          AND ($3::uuid IS NULL OR b.member_id = $3)
         ORDER BY b.booked_at DESC`,
-      [req.tenantId, session_id || null]
+      [req.tenantId, session_id || null, member_id || null]
     );
     res.json(result.rows);
   } catch (err) {
