@@ -3,6 +3,7 @@
 // belong to. Functionality is unchanged; only the presentation is premium.
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { IconCheck } from '../components/icons.jsx';
 
@@ -68,7 +69,10 @@ export default function Login() {
           </button>
           {error && <div className="error">{error}</div>}
 
-          <p className="muted" style={{ marginTop: 18, textAlign: 'center' }}>
+          <p className="muted" style={{ marginTop: 16, textAlign: 'center' }}>
+            New here? <Link to="/signup">Create your gym →</Link>
+          </p>
+          <p className="muted" style={{ marginTop: 8, textAlign: 'center' }}>
             Demo login — gym code <b>demo</b> · admin@demo.test · password123
           </p>
         </form>

@@ -62,4 +62,52 @@ router.get('/me', verifyToken, async (req, res, next) => {
   }
 });
 
+// POST /api/auth/register  { gymName, email, password, currency? }
+// Self-service gym signup: creates a new tenant (gym) + its first admin user and
+// returns a JWT so the owner is logged in immediately. The gym's slug — the
+// "gym code" used to log in later — is derived from the name and made unique.
+router.post('/register', async (req, res, next) => {
+  try {
+    const { gymName, email, password, currency } = req.body;
+    if (!gymName || !email || !password) {
+      return res.status(400).json({ error: 'Gym name, email and password are required' });
+    }
+    if (String(password).length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Build a URL-safe slug and ensure it is unique across tenants.
+    const base = String(gymName).toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'gym';
+    let slug = base;
+    for (let n = 2; ; n++) {
+      const exists = await query('SELECT 1 FROM tenants WHERE slug = $1', [slug]);
+      if (!exists.rows.length) break;
+      slug = `${base}-${n}`;
+    }
+
+    const tenantRes = await query(
+      `INSERT INTO tenants (slug, name, currency) VALUES ($1, $2, $3) RETURNING id`,
+      [slug, gymName, currency || 'USD']
+    );
+    const tenantId = tenantRes.rows[0].id;
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const userRes = await query(
+      `INSERT INTO users (tenant_id, email, password_hash, role)
+       VALUES ($1, $2, $3, 'admin') RETURNING id`,
+      [tenantId, email, passwordHash]
+    );
+
+    const token = jwt.sign(
+      { sub: userRes.rows[0].id, tenantId, role: 'admin', memberId: null },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn }
+    );
+    res.status(201).json({ token, role: 'admin', slug });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

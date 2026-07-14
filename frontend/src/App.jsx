@@ -6,6 +6,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
+import SignUp from './pages/SignUp.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
 import Plans from './pages/Plans.jsx';
@@ -21,6 +22,7 @@ export default function App() {
   if (loading) return <div className="center">Loading…</div>;
   if (!user) return (
     <Routes>
+      <Route path="/signup" element={<SignUp />} />
       <Route path="*" element={<Login />} />
     </Routes>
   );

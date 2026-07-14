@@ -51,6 +51,15 @@ export function AuthProvider({ children }) {
     await loadSession();
   }
 
+  // Self-service gym signup: creates the gym + admin and logs straight in.
+  // Returns the new gym's "gym code" (slug) so we can show it to the owner.
+  async function register(gymName, email, password) {
+    const res = await api.post('/auth/register', { gymName, email, password });
+    localStorage.setItem('token', res.data.token);
+    await loadSession();
+    return res.data.slug;
+  }
+
   function logout() {
     localStorage.removeItem('token');
     setUser(null);
@@ -63,7 +72,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, tenant, loading, login, logout, features, reload: loadSession }}>
+    <AuthContext.Provider value={{ user, tenant, loading, login, register, logout, features, reload: loadSession }}>
       {children}
     </AuthContext.Provider>
   );

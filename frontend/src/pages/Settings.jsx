@@ -64,6 +64,10 @@ export default function Settings() {
       </div>
       {notice && <div className="notice" style={{ marginBottom: 16 }}>{notice}</div>}
 
+      <p className="muted" style={{ marginBottom: 16 }}>
+        Your gym code (used to sign in): <b>{tenant?.slug}</b>
+      </p>
+
       <form className="card" onSubmit={save} style={{ maxWidth: 640 }}>
         <div className="form-row">
           <label>Gym name</label>
