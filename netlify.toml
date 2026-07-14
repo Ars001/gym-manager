@@ -1,0 +1,19 @@
+# Netlify config for the FRONTEND (the React app in /frontend).
+# The backend (Express) is NOT hosted here — deploy it to Render (see render.yaml)
+# and point the frontend at it with the VITE_API_BASE_URL environment variable
+# (set it in Netlify: Site settings -> Environment variables).
+
+[build]
+  base = "frontend"          # build from the frontend folder
+  command = "npm run build"  # Vite build -> frontend/dist
+  publish = "dist"           # publish dir (relative to base)
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Single-page-app fallback: every route serves index.html so client-side
+# routing (React Router) works on refresh / deep links.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

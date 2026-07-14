@@ -1,5 +1,5 @@
 // Reporting dashboard. Pulls summary metrics from /api/reports/summary and shows
-// headline numbers. When the gym has no data yet, it shows a simple, friendly
+// premium stat cards. When the gym has no data yet, it shows a friendly
 // "getting started" checklist so a new user knows exactly what to do first.
 
 import { useEffect, useState } from 'react';
@@ -7,6 +7,20 @@ import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatMoney } from '../config/branding';
+import { IconUsers, IconDollar, IconCheckSquare, IconTrend, IconCheck } from '../components/icons.jsx';
+
+// One stat tile.
+function Stat({ icon: Icon, label, value, accent }) {
+  return (
+    <div className="card stat-card">
+      <div className="stat-top">
+        <span className="stat-label">{label}</span>
+        <span className="stat-ic"><Icon /></span>
+      </div>
+      <div className={`stat${accent ? ' accent' : ''}`}>{value}</div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { tenant } = useAuth();
@@ -25,54 +39,45 @@ export default function Dashboard() {
   const currency = tenant?.currency || 'USD';
   const isEmpty = Number(data.members.total_members) === 0;
 
+  const steps = [
+    ['Create a membership plan', '/plans'],
+    ['Add a member and put them on that plan', '/members'],
+    ['Schedule a session (a class or slot)', '/schedule'],
+    ['Book the member into that session', '/booking'],
+    ['Check them in when they arrive', '/check-in'],
+  ];
+
   return (
     <div>
-      <h1>Dashboard</h1>
+      <div className="page-head">
+        <div>
+          <h1>Dashboard</h1>
+          <div className="subtitle">Overview of {tenant?.name || 'your gym'}</div>
+        </div>
+      </div>
 
-      {/* First-time guidance: shown until the gym has at least one member. */}
       {isEmpty && (
-        <div className="card" style={{ marginBottom: 24 }}>
-          <h3 style={{ marginTop: 0 }}>👋 Welcome! Let’s set up your gym</h3>
-          <p className="muted">Follow these steps in order — it takes about a minute:</p>
-          <ol style={{ lineHeight: 1.9, margin: 0 }}>
-            <li><Link to="/plans">Create a membership plan</Link> (e.g. Monthly)</li>
-            <li><Link to="/members">Add a member</Link> and put them on that plan</li>
-            <li><Link to="/schedule">Schedule a session</Link> (a class or slot)</li>
-            <li><Link to="/booking">Book the member</Link> into that session</li>
-            <li><Link to="/check-in">Check them in</Link> when they arrive</li>
+        <div className="card" style={{ marginBottom: 22 }}>
+          <h3>👋 Welcome! Let’s set up your gym</h3>
+          <p className="muted" style={{ marginTop: 0 }}>Follow these steps in order — it takes about a minute:</p>
+          <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 2 }}>
+            {steps.map(([text, to]) => (
+              <li key={to}><Link to={to}>{text}</Link></li>
+            ))}
           </ol>
           <p className="muted" style={{ marginTop: 12 }}>
-            Want it pre-filled instead? Double-click <b>load-demo-data.bat</b> in the
-            project folder, then refresh this page.
+            Prefer it pre-filled? Double-click <b>load-demo-data.bat</b> in the project folder, then refresh.
           </p>
         </div>
       )}
 
       <div className="grid">
-        <div className="card">
-          <div className="muted">Active members</div>
-          <div className="stat">{data.members.active_members}</div>
-        </div>
-        <div className="card">
-          <div className="muted">Churned members</div>
-          <div className="stat">{data.members.churned_members}</div>
-        </div>
-        <div className="card">
-          <div className="muted">Revenue (30 days)</div>
-          <div className="stat">{formatMoney(data.revenue.revenue_30d_cents, currency)}</div>
-        </div>
-        <div className="card">
-          <div className="muted">Revenue (all time)</div>
-          <div className="stat">{formatMoney(data.revenue.revenue_all_cents, currency)}</div>
-        </div>
-        <div className="card">
-          <div className="muted">Check-ins (30 days)</div>
-          <div className="stat">{data.attendance.checkins_30d}</div>
-        </div>
-        <div className="card">
-          <div className="muted">Total members</div>
-          <div className="stat">{data.members.total_members}</div>
-        </div>
+        <Stat icon={IconUsers} label="Active members" value={data.members.active_members} accent />
+        <Stat icon={IconUsers} label="Churned members" value={data.members.churned_members} />
+        <Stat icon={IconDollar} label="Revenue (30 days)" value={formatMoney(data.revenue.revenue_30d_cents, currency)} />
+        <Stat icon={IconTrend} label="Revenue (all time)" value={formatMoney(data.revenue.revenue_all_cents, currency)} />
+        <Stat icon={IconCheckSquare} label="Check-ins (30 days)" value={data.attendance.checkins_30d} />
+        <Stat icon={IconCheck} label="Total members" value={data.members.total_members} />
       </div>
     </div>
   );

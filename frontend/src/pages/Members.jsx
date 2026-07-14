@@ -45,7 +45,12 @@ export default function Members() {
 
   return (
     <div>
-      <h1>Members</h1>
+      <div className="page-head">
+        <div>
+          <h1>Members</h1>
+          <div className="subtitle">Manage your gym members, their plans, and membership status.</div>
+        </div>
+      </div>
 
       <form className="card" style={{ marginBottom: 24 }} onSubmit={addMember}>
         <h3 style={{ marginTop: 0 }}>Add member</h3>
@@ -79,6 +84,7 @@ export default function Members() {
         {error && <div className="error">{error}</div>}
       </form>
 
+      <div className="table-wrap scroll">
       <table>
         <thead>
           <tr><th>Name</th><th>Email</th><th>Phone</th><th>Plan</th><th>Status</th></tr>
@@ -108,6 +114,7 @@ export default function Members() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

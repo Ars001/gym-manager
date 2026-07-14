@@ -56,8 +56,13 @@ export default function Settings() {
 
   return (
     <div>
-      <h1>Settings</h1>
-      {notice && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--color-primary)' }}>{notice}</div>}
+      <div className="page-head">
+        <div>
+          <h1>Settings</h1>
+          <div className="subtitle">Branding, currency, and feature toggles for your gym</div>
+        </div>
+      </div>
+      {notice && <div className="notice" style={{ marginBottom: 16 }}>{notice}</div>}
 
       <form className="card" onSubmit={save} style={{ maxWidth: 640 }}>
         <div className="form-row">

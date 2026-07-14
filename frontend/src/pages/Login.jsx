@@ -1,8 +1,10 @@
-// Login screen. Collects tenant slug + email + password and calls the auth API.
-// The tenant slug is how one shared deployment knows which gym you belong to.
+// Login screen — split layout: a branded panel + the sign-in form.
+// The tenant slug ("gym code") is how one shared deployment knows which gym you
+// belong to. Functionality is unchanged; only the presentation is premium.
 
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { IconCheck } from '../components/icons.jsx';
 
 export default function Login() {
   const { login } = useAuth();
@@ -19,34 +21,58 @@ export default function Login() {
     try {
       await login(tenantSlug, email, password);
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || 'Login failed — check your details and that the server is running.');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="login-wrap">
-      <form className="card login-card" onSubmit={onSubmit}>
-        <h1>Sign in</h1>
-        <div className="form-row">
-          <label>Gym code</label>
-          <input value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} />
+    <div className="auth">
+      {/* Brand / value panel (hidden on small screens) */}
+      <div className="auth-brand">
+        <div className="auth-brand-logo">G</div>
+        <div>
+          <div className="auth-headline">Run your studio, not your spreadsheets.</div>
+          <ul className="auth-points">
+            <li><IconCheck /> Members, plans &amp; billing in one place</li>
+            <li><IconCheck /> Class scheduling &amp; online booking</li>
+            <li><IconCheck /> Fast QR check-in at the door</li>
+            <li><IconCheck /> Revenue &amp; attendance at a glance</li>
+          </ul>
         </div>
-        <div className="form-row">
-          <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="form-row">
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <button className="btn" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
-        {error && <div className="error">{error}</div>}
-        <p className="muted" style={{ marginTop: 16 }}>
-          Demo: gym code <b>demo</b> · admin@demo.test · password123
-        </p>
-      </form>
+        <div style={{ opacity: 0.8, fontSize: 13 }}>Gym Manager</div>
+      </div>
+
+      {/* Sign-in form */}
+      <div className="auth-form-wrap">
+        <form className="card auth-card" onSubmit={onSubmit}>
+          <h1>Sign in</h1>
+          <p className="subtitle" style={{ marginBottom: 20 }}>Welcome back — enter your details.</p>
+
+          <div className="form-row">
+            <label>Gym code</label>
+            <input value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} autoComplete="organization" />
+          </div>
+          <div className="form-row">
+            <label>Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
+          </div>
+          <div className="form-row">
+            <label>Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          </div>
+
+          <button className="btn" style={{ width: '100%', marginTop: 4 }} disabled={busy}>
+            {busy ? 'Signing in…' : 'Sign in'}
+          </button>
+          {error && <div className="error">{error}</div>}
+
+          <p className="muted" style={{ marginTop: 18, textAlign: 'center' }}>
+            Demo login — gym code <b>demo</b> · admin@demo.test · password123
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

@@ -21,6 +21,47 @@ Helper scripts in the project root:
 
 Keep the two server windows open while using the app; close them to stop.
 
+## Deploy it online (to share for feedback)
+
+This is a full-stack app: the **frontend** (React) and the **backend** (Express)
+are hosted separately. Both connect to your existing **Neon** database, so your
+data (including demo data) shows up online immediately.
+
+**1. Push to GitHub** (see the next section).
+
+**2. Backend → Render** (free): New + → **Blueprint** → pick this repo. Render
+   reads `render.yaml`. Fill in the env vars it asks for:
+   - `DATABASE_URL` — your Neon connection string (same one as local)
+   - `CORS_ORIGIN` — your Netlify URL (set after step 3, e.g. `https://your-gym.netlify.app`)
+   Deploy → copy the service URL, e.g. `https://gym-manager-api.onrender.com`.
+
+**3. Frontend → Netlify** (free): Add new site → **Import from GitHub** → pick
+   this repo. Netlify reads `netlify.toml` (base `frontend`, builds `dist`). Add
+   one environment variable:
+   - `VITE_API_BASE_URL` = your Render URL from step 2
+   Deploy → you get a public link like `https://your-gym.netlify.app` to share.
+
+**4.** Put that Netlify URL into Render's `CORS_ORIGIN` and redeploy the backend
+   so the browser is allowed to call the API.
+
+> Note: Render's free tier sleeps after inactivity, so the first request after a
+> pause can take ~30s to wake up. Fine for feedback demos.
+
+## Push to GitHub
+
+```bash
+cd gym-manager
+git add -A && git commit -m "Ready to deploy"
+# create an EMPTY repo on github.com (no README), then:
+git remote add origin https://github.com/<your-username>/gym-manager.git
+git branch -M main
+git push -u origin main
+```
+
+On first push, Git opens a browser window to sign in to GitHub (Git Credential
+Manager) — no password is typed into the terminal. Your real `.env` is
+git-ignored, so no secrets are uploaded.
+
 ## Tech stack
 
 - **Frontend:** React (Vite) + React Router + axios

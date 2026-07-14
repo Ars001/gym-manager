@@ -61,7 +61,12 @@ export default function Booking() {
 
   return (
     <div>
-      <h1>Book a class</h1>
+      <div className="page-head">
+        <div>
+          <h1>Book a class</h1>
+          <div className="subtitle">Reserve a spot in an upcoming class and get a check-in QR code</div>
+        </div>
+      </div>
 
       {/* Step 1 hint for staff: pick who you're booking for. */}
       {!isMember && (
@@ -104,7 +109,7 @@ export default function Booking() {
                   {/* QR encodes the booking id; staff scan it at check-in. */}
                   <QRCodeSVG value={booking.id} size={96} />
                   <div>
-                    <button className="btn" style={{ marginTop: 12, background: '#dc2626' }}
+                    <button className="btn btn-danger btn-sm" style={{ marginTop: 12 }}
                       onClick={() => cancel(booking.id)}>Cancel booking</button>
                   </div>
                 </div>

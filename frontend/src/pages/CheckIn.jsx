@@ -8,6 +8,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import QrScanner from '../components/QrScanner.jsx';
+import StatusBadge from '../components/StatusBadge.jsx';
 
 export default function CheckIn() {
   const [sessions, setSessions] = useState([]);
@@ -51,7 +52,12 @@ export default function CheckIn() {
 
   return (
     <div>
-      <h1>Check-in</h1>
+      <div className="page-head">
+        <div>
+          <h1>Check-in</h1>
+          <div className="subtitle">Scan a QR, paste a code, or mark the roster</div>
+        </div>
+      </div>
 
       <div className="card" style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -87,27 +93,29 @@ export default function CheckIn() {
       </div>
 
       {sessionId && (
-        <table>
-          <thead>
-            <tr><th>Member</th><th>Status</th><th></th></tr>
-          </thead>
-          <tbody>
-            {roster.map((b) => (
-              <tr key={b.id}>
-                <td>{b.first_name} {b.last_name}</td>
-                <td>{b.status === 'attended' ? 'Checked in' : 'Booked'}</td>
-                <td>
-                  {b.status === 'attended'
-                    ? <span className="muted">✓ {new Date(b.checked_in_at).toLocaleTimeString()}</span>
-                    : <button className="btn" onClick={() => checkInById(b.id)}>Check in</button>}
-                </td>
-              </tr>
-            ))}
-            {roster.length === 0 && (
-              <tr><td colSpan="3" className="muted">No one booked for this session.</td></tr>
-            )}
-          </tbody>
-        </table>
+        <div className="table-wrap scroll">
+          <table>
+            <thead>
+              <tr><th>Member</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              {roster.map((b) => (
+                <tr key={b.id}>
+                  <td>{b.first_name} {b.last_name}</td>
+                  <td><StatusBadge status={b.status} /></td>
+                  <td>
+                    {b.status === 'attended'
+                      ? <span className="muted">✓ {new Date(b.checked_in_at).toLocaleTimeString()}</span>
+                      : <button className="btn btn-sm" onClick={() => checkInById(b.id)}>Check in</button>}
+                  </td>
+                </tr>
+              ))}
+              {roster.length === 0 && (
+                <tr><td colSpan="3" className="muted">No one booked for this session.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

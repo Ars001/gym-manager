@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../api/client';
+import StatusBadge from '../components/StatusBadge.jsx';
 
 // Empty form template reused on reset.
 const EMPTY = { session_type_id: '', title: '', instructor: '', starts_at: '', ends_at: '', capacity: 10 };
@@ -61,7 +62,12 @@ export default function Schedule() {
 
   return (
     <div>
-      <h1>Schedule</h1>
+      <div className="page-head">
+        <div>
+          <h1>Schedule</h1>
+          <div className="subtitle">Create classes and manage upcoming sessions</div>
+        </div>
+      </div>
 
       <form className="card" style={{ marginBottom: 24 }} onSubmit={createSession}>
         <h3 style={{ marginTop: 0 }}>New session</h3>
@@ -101,31 +107,33 @@ export default function Schedule() {
         {error && <div className="error">{error}</div>}
       </form>
 
-      <table>
-        <thead>
-          <tr><th>Session</th><th>Starts</th><th>Capacity</th><th>Booked</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {sessions.map((s) => (
-            <tr key={s.id}>
-              <td>{s.title}</td>
-              <td>{new Date(s.starts_at).toLocaleString()}</td>
-              <td>{s.capacity}</td>
-              <td>{s.booked_count}</td>
-              <td>{s.status}</td>
-              <td>
-                {s.status === 'scheduled' && (
-                  <button className="btn" style={{ background: '#dc2626' }}
-                    onClick={() => cancelSession(s.id)}>Cancel</button>
-                )}
-              </td>
-            </tr>
-          ))}
-          {sessions.length === 0 && (
-            <tr><td colSpan="6" className="muted">No sessions scheduled.</td></tr>
-          )}
-        </tbody>
-      </table>
+      <div className="table-wrap scroll">
+        <table>
+          <thead>
+            <tr><th>Session</th><th>Starts</th><th>Capacity</th><th>Booked</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {sessions.map((s) => (
+              <tr key={s.id}>
+                <td>{s.title}</td>
+                <td>{new Date(s.starts_at).toLocaleString()}</td>
+                <td>{s.capacity}</td>
+                <td>{s.booked_count}</td>
+                <td><StatusBadge status={s.status} /></td>
+                <td>
+                  {s.status === 'scheduled' && (
+                    <button className="btn btn-danger btn-sm"
+                      onClick={() => cancelSession(s.id)}>Cancel</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {sessions.length === 0 && (
+              <tr><td colSpan="6" className="muted">No sessions scheduled.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

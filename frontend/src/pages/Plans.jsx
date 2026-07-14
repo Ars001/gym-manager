@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatMoney } from '../config/branding';
+import StatusBadge from '../components/StatusBadge.jsx';
 
 const EMPTY = { name: '', amount: '', billing_interval: 'month' };
 
@@ -51,7 +52,12 @@ export default function Plans() {
 
   return (
     <div>
-      <h1>Membership plans</h1>
+      <div className="page-head">
+        <div>
+          <h1>Membership plans</h1>
+          <div className="subtitle">Create and manage the plans members can subscribe to.</div>
+        </div>
+      </div>
 
       <form className="card" style={{ marginBottom: 24 }} onSubmit={createPlan}>
         <h3 style={{ marginTop: 0 }}>New plan</h3>
@@ -80,26 +86,28 @@ export default function Plans() {
         {error && <div className="error">{error}</div>}
       </form>
 
-      <table>
-        <thead>
-          <tr><th>Name</th><th>Price</th><th>Billing</th><th>Active</th><th></th></tr>
-        </thead>
-        <tbody>
-          {plans.map((p) => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{formatMoney(p.price_cents, p.currency || currency)}</td>
-              <td>{p.billing_interval}</td>
-              <td>{p.active ? 'Yes' : 'No'}</td>
-              <td>
-                <button className="btn" style={{ background: p.active ? '#dc2626' : undefined }}
-                  onClick={() => toggleActive(p)}>{p.active ? 'Deactivate' : 'Activate'}</button>
-              </td>
-            </tr>
-          ))}
-          {plans.length === 0 && <tr><td colSpan="5" className="muted">No plans yet.</td></tr>}
-        </tbody>
-      </table>
+      <div className="table-wrap scroll">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Price</th><th>Billing</th><th>Active</th><th></th></tr>
+          </thead>
+          <tbody>
+            {plans.map((p) => (
+              <tr key={p.id}>
+                <td>{p.name}</td>
+                <td>{formatMoney(p.price_cents, p.currency || currency)}</td>
+                <td>{p.billing_interval}</td>
+                <td><StatusBadge status={p.active ? 'active' : 'inactive'} /></td>
+                <td>
+                  <button className={p.active ? 'btn btn-danger btn-sm' : 'btn btn-sm'}
+                    onClick={() => toggleActive(p)}>{p.active ? 'Deactivate' : 'Activate'}</button>
+                </td>
+              </tr>
+            ))}
+            {plans.length === 0 && <tr><td colSpan="5" className="muted">No plans yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

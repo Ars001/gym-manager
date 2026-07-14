@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatMoney } from '../config/branding';
+import StatusBadge from '../components/StatusBadge.jsx';
 
 export default function Billing() {
   const { tenant } = useAuth();
@@ -75,7 +76,12 @@ export default function Billing() {
 
   return (
     <div>
-      <h1>Billing</h1>
+      <div className="page-head">
+        <div>
+          <h1>Billing</h1>
+          <div className="subtitle">Subscribe members to plans and record payments</div>
+        </div>
+      </div>
 
       {notice && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--color-primary)' }}>{notice}</div>}
 
@@ -130,25 +136,27 @@ export default function Billing() {
         </p>
       </form>
 
-      <table>
-        <thead>
-          <tr><th>Member</th><th>Amount</th><th>Type</th><th>Status</th><th>Date</th></tr>
-        </thead>
-        <tbody>
-          {payments.map((p) => (
-            <tr key={p.id}>
-              <td>{p.first_name ? `${p.first_name} ${p.last_name}` : '—'}</td>
-              <td>{formatMoney(p.amount_cents, p.currency || currency)}</td>
-              <td>{p.type}</td>
-              <td>{p.status}</td>
-              <td>{new Date(p.created_at).toLocaleDateString()}</td>
-            </tr>
-          ))}
-          {payments.length === 0 && (
-            <tr><td colSpan="5" className="muted">No payments yet.</td></tr>
-          )}
-        </tbody>
-      </table>
+      <div className="table-wrap scroll">
+        <table>
+          <thead>
+            <tr><th>Member</th><th>Amount</th><th>Type</th><th>Status</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {payments.map((p) => (
+              <tr key={p.id}>
+                <td>{p.first_name ? `${p.first_name} ${p.last_name}` : '—'}</td>
+                <td>{formatMoney(p.amount_cents, p.currency || currency)}</td>
+                <td>{p.type}</td>
+                <td><StatusBadge status={p.status} /></td>
+                <td>{new Date(p.created_at).toLocaleDateString()}</td>
+              </tr>
+            ))}
+            {payments.length === 0 && (
+              <tr><td colSpan="5" className="muted">No payments yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

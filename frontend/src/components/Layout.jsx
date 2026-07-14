@@ -1,49 +1,103 @@
-// App shell: sidebar nav + header. Nav items respect the user's role and the
-// tenant's feature flags, so a client with retail/POS disabled simply won't see
-// that link — configuration, not code changes.
+// App shell: branded sidebar (with icons) + responsive top bar on mobile.
+// Nav items respect the user's role and the tenant's feature flags, so a client
+// with retail/POS disabled simply won't see that link — configuration, not code.
 
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { initials } from '../config/branding';
+import {
+  IconGrid, IconCalendar, IconTicket, IconUsers, IconTag,
+  IconCheckSquare, IconCard, IconSettings, IconLogout, IconMenu, IconStore,
+} from './icons.jsx';
+
+// Icon lookup so nav data stays declarative.
+const ICONS = {
+  grid: IconGrid, calendar: IconCalendar, ticket: IconTicket, users: IconUsers,
+  tag: IconTag, check: IconCheckSquare, card: IconCard, settings: IconSettings, store: IconStore,
+};
 
 export default function Layout({ children }) {
   const { user, tenant, logout, features } = useAuth();
+  const [open, setOpen] = useState(false); // mobile drawer
 
-  // Base nav available to all logged-in roles.
-  const nav = [
-    { to: '/', label: 'Dashboard', end: true },
-    { to: '/schedule', label: 'Schedule' },
-    { to: '/booking', label: 'Booking' },
+  // Nav grouped into sections. Each entry: { to, label, icon, end }.
+  const groups = [
+    { title: null, items: [
+      { to: '/', label: 'Dashboard', icon: 'grid', end: true },
+      { to: '/schedule', label: 'Schedule', icon: 'calendar' },
+      { to: '/booking', label: 'Booking', icon: 'ticket' },
+    ] },
   ];
-  // Staff/admin-only screens.
+
+  const manage = [];
   if (user?.role !== 'member') {
-    nav.push({ to: '/members', label: 'Members' });
-    nav.push({ to: '/plans', label: 'Plans' });
-    nav.push({ to: '/check-in', label: 'Check-in' });
-    nav.push({ to: '/billing', label: 'Billing' });
+    manage.push(
+      { to: '/members', label: 'Members', icon: 'users' },
+      { to: '/plans', label: 'Plans', icon: 'tag' },
+      { to: '/check-in', label: 'Check-in', icon: 'check' },
+      { to: '/billing', label: 'Billing', icon: 'card' },
+    );
   }
-  // Example of a feature-flag-gated nav item.
-  if (features('retail_pos')) {
-    nav.push({ to: '/retail', label: 'Retail / POS' });
-  }
-  // Admin-only settings (branding, feature toggles).
+  if (features('retail_pos')) manage.push({ to: '/retail', label: 'Retail / POS', icon: 'store' });
+  if (manage.length) groups.push({ title: 'Manage', items: manage });
+
   if (user?.role === 'admin') {
-    nav.push({ to: '/settings', label: 'Settings' });
+    groups.push({ title: 'Admin', items: [{ to: '/settings', label: 'Settings', icon: 'settings' }] });
   }
+
+  const gymName = tenant?.name || 'Gym Manager';
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">{tenant?.name || 'Gym Manager'}</div>
-        <nav>
-          {nav.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
-              {item.label}
-            </NavLink>
+      {/* Mobile top bar */}
+      <header className="topbar">
+        <button className="hamburger" onClick={() => setOpen(true)} aria-label="Open menu"><IconMenu /></button>
+        <span className="brand-name">{gymName}</span>
+      </header>
+
+      {open && <div className="backdrop" onClick={() => setOpen(false)} />}
+
+      <aside className={`sidebar${open ? ' open' : ''}`}>
+        <div className="brand">
+          <div className="brand-logo">{initials(gymName)}</div>
+          <div>
+            <div className="brand-name">{gymName}</div>
+            <div className="brand-sub">Studio management</div>
+          </div>
+        </div>
+
+        <nav onClick={() => setOpen(false)}>
+          {groups.map((g, gi) => (
+            <div key={gi}>
+              {g.title && <div className="nav-section">{g.title}</div>}
+              {g.items.map((item) => {
+                const Icon = ICONS[item.icon] || IconGrid;
+                return (
+                  <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
+                    <Icon /> {item.label}
+                  </NavLink>
+                );
+              })}
+            </div>
           ))}
         </nav>
-        <button className="logout" onClick={logout}>Log out</button>
+
+        <div className="sidebar-footer">
+          <div className="user-chip">
+            <div className="avatar">{initials(user?.email || 'U')}</div>
+            <div>
+              <div className="user-name">{user?.email?.split('@')[0] || 'User'}</div>
+              <div className="user-role">{user?.role || ''}</div>
+            </div>
+          </div>
+          <button className="logout" onClick={logout}><IconLogout /> Log out</button>
+        </div>
       </aside>
-      <main className="content">{children}</main>
+
+      <div className="app-main">
+        <main className="content">{children}</main>
+      </div>
     </div>
   );
 }
