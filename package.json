@@ -1,0 +1,16 @@
+{
+  "name": "gym-manager-netlify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root dependencies so Netlify can bundle the Express backend as a serverless function (netlify/functions/api.js). Local dev still uses backend/ and frontend/ independently.",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0",
+    "serverless-http": "^3.2.0",
+    "stripe": "^16.2.0"
+  }
+}

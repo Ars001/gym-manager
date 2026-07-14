@@ -27,25 +27,28 @@ This is a full-stack app: the **frontend** (React) and the **backend** (Express)
 are hosted separately. Both connect to your existing **Neon** database, so your
 data (including demo data) shows up online immediately.
 
+The whole app deploys to **one Netlify site, no credit card**: the React
+frontend as static files and the Express API as a serverless function
+(`netlify/functions/api.js`, via `serverless-http`). The function talks to your
+existing **Neon** database, so your data (incl. demo data) is there immediately.
+
 **1. Push to GitHub** (see the next section).
 
-**2. Backend → Render** (free): New + → **Blueprint** → pick this repo. Render
-   reads `render.yaml`. Fill in the env vars it asks for:
-   - `DATABASE_URL` — your Neon connection string (same one as local)
-   - `CORS_ORIGIN` — your Netlify URL (set after step 3, e.g. `https://your-gym.netlify.app`)
-   Deploy → copy the service URL, e.g. `https://gym-manager-api.onrender.com`.
-
-**3. Frontend → Netlify** (free): Add new site → **Import from GitHub** → pick
-   this repo. Netlify reads `netlify.toml` (base `frontend`, builds `dist`). Add
-   one environment variable:
-   - `VITE_API_BASE_URL` = your Render URL from step 2
+**2. Deploy on Netlify** (free, no card): [app.netlify.com](https://app.netlify.com)
+   → sign in with GitHub → **Add new site → Import an existing project** → pick
+   this repo. Netlify reads `netlify.toml` automatically (builds the frontend,
+   bundles the API function, routes `/api/*` to it). Before deploying, add two
+   environment variables (Site configuration → Environment variables):
+   - `DATABASE_URL` = your Neon connection string (the same one in `backend/.env`)
+   - `JWT_SECRET` = any long random string
    Deploy → you get a public link like `https://your-gym.netlify.app` to share.
 
-**4.** Put that Netlify URL into Render's `CORS_ORIGIN` and redeploy the backend
-   so the browser is allowed to call the API.
+That's it — one site, frontend + backend together. Do **not** set
+`VITE_API_BASE_URL`: the frontend calls `/api` on the same site and Netlify
+routes it to the function (so there's no CORS to configure).
 
-> Note: Render's free tier sleeps after inactivity, so the first request after a
-> pause can take ~30s to wake up. Fine for feedback demos.
+> `render.yaml` is also included if you ever prefer hosting the backend on Render
+> instead (that route requires a card for identity verification).
 
 ## Push to GitHub
 

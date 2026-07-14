@@ -1,18 +1,35 @@
-# Netlify config for the FRONTEND (the React app in /frontend).
-# The backend (Express) is NOT hosted here — deploy it to Render (see render.yaml)
-# and point the frontend at it with the VITE_API_BASE_URL environment variable
-# (set it in Netlify: Site settings -> Environment variables).
+# Netlify config — hosts the WHOLE app on one site (no card, no separate backend
+# host): the React frontend as static files, and the Express API as a serverless
+# function (netlify/functions/api.js via serverless-http).
+#
+# Set these environment variables in Netlify (Site settings -> Environment):
+#   DATABASE_URL  = your Neon connection string (same one used locally)
+#   JWT_SECRET    = any long random string
+# Do NOT set VITE_API_BASE_URL — the frontend calls /api on the same site and
+# the redirect below routes it to the function (so there is no CORS to deal with).
 
 [build]
-  base = "frontend"          # build from the frontend folder
-  command = "npm run build"  # Vite build -> frontend/dist
-  publish = "dist"           # publish dir (relative to base)
+  # Netlify auto-installs the root package.json (the function's deps); this also
+  # installs and builds the frontend.
+  command = "npm install --prefix frontend && npm run build --prefix frontend"
+  publish = "frontend/dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
 
-# Single-page-app fallback: every route serves index.html so client-side
-# routing (React Router) works on refresh / deep links.
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["pg"]
+
+# API calls -> serverless function.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Single-page-app fallback so client-side routes work on refresh.
 [[redirects]]
   from = "/*"
   to = "/index.html"
