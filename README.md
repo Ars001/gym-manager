@@ -86,9 +86,37 @@ Because this is multi-tenant, a new client is a new **row**, not a new deploymen
 - Popular, well-documented libraries only, so it stays maintainable.
 - Configuration lives in the `tenants` table + `config/`, never scattered/hardcoded.
 
-## Roadmap (next after MVP scaffold)
+## Stripe setup (recurring billing)
 
-- Wire booking/cancel and staff check-in actions to their endpoints
-- Session create/edit UI + membership plan management
-- Stripe subscriptions + webhook handling for recurring billing
-- QR check-in; GoCardless for UK direct debit
+Recurring billing is optional — without a Stripe key, subscriptions/charges are
+recorded locally as succeeded so the app is fully usable for demos.
+
+To enable real payments:
+
+1. Put your `STRIPE_SECRET_KEY` in `backend/.env`.
+2. For recurring invoices, run the Stripe CLI in dev and set the printed signing
+   secret as `STRIPE_WEBHOOK_SECRET`:
+   ```bash
+   stripe listen --forward-to localhost:4000/api/webhooks/stripe
+   ```
+3. Creating a recurring plan then creates a matching Stripe Price automatically;
+   subscribing a member creates a Stripe customer + subscription.
+
+The one remaining piece for live cards is confirming the first payment with
+Stripe Elements on the frontend (the API already returns the `clientSecret`).
+
+## What's built
+
+- Members (CRUD, inline status/plan assignment), membership plans
+- Scheduling (create/cancel sessions from type templates)
+- Online booking + cancel, with per-member QR codes
+- Check-in: session roster, camera QR scan, or manual booking code
+- Billing: one-off charges + plan subscriptions (Stripe-backed, webhook-recorded)
+- Reporting dashboard (active/churned members, revenue, attendance)
+- Admin Settings: gym name, currency, brand colors, feature toggles
+
+## Roadmap
+
+- Stripe Elements card confirmation for the first subscription payment
+- Email notifications (booking confirmations, failed payments)
+- GoCardless for UK direct debit

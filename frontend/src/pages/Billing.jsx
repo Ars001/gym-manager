@@ -13,8 +13,11 @@ export default function Billing() {
 
   const [payments, setPayments] = useState([]);
   const [members, setMembers] = useState([]);
+  const [plans, setPlans] = useState([]);
   const [form, setForm] = useState({ member_id: '', amount: '', description: '' });
+  const [sub, setSub] = useState({ member_id: '', plan_id: '' });
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   function load() {
     api.get('/payments').then((res) => setPayments(res.data)).catch(() => {});
@@ -22,7 +25,31 @@ export default function Billing() {
   useEffect(() => {
     load();
     api.get('/members').then((res) => setMembers(res.data)).catch(() => {});
+    // Only recurring plans can be subscribed to.
+    api.get('/plans').then((res) => setPlans(res.data.filter((p) => p.active && p.billing_interval !== 'one_off'))).catch(() => {});
   }, []);
+
+  async function subscribe(e) {
+    e.preventDefault();
+    setError('');
+    setNotice('');
+    if (!sub.member_id || !sub.plan_id) {
+      setError('Pick a member and a plan');
+      return;
+    }
+    try {
+      const res = await api.post('/payments/subscribe', sub);
+      setSub({ member_id: '', plan_id: '' });
+      // With Stripe on, the first payment must be confirmed with this secret on a
+      // card form (Stripe Elements) — noted here for the next build step.
+      setNotice(res.data.clientSecret
+        ? 'Subscription created. First payment needs card confirmation (Stripe Elements — next step).'
+        : 'Subscription recorded and membership activated.');
+      load();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Subscribe failed');
+    }
+  }
 
   async function charge(e) {
     e.preventDefault();
@@ -49,6 +76,29 @@ export default function Billing() {
   return (
     <div>
       <h1>Billing</h1>
+
+      {notice && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--color-primary)' }}>{notice}</div>}
+
+      <form className="card" style={{ marginBottom: 24 }} onSubmit={subscribe}>
+        <h3 style={{ marginTop: 0 }}>Subscribe a member to a plan</h3>
+        <div className="grid">
+          <div className="form-row">
+            <label>Member</label>
+            <select value={sub.member_id} onChange={(e) => setSub({ ...sub, member_id: e.target.value })}>
+              <option value="">— select —</option>
+              {members.map((m) => <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>)}
+            </select>
+          </div>
+          <div className="form-row">
+            <label>Plan</label>
+            <select value={sub.plan_id} onChange={(e) => setSub({ ...sub, plan_id: e.target.value })}>
+              <option value="">— select —</option>
+              {plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <button className="btn">Subscribe</button>
+      </form>
 
       <form className="card" style={{ marginBottom: 24 }} onSubmit={charge}>
         <h3 style={{ marginTop: 0 }}>Record a one-off charge</h3>

@@ -17,12 +17,17 @@ export default function Layout({ children }) {
   // Staff/admin-only screens.
   if (user?.role !== 'member') {
     nav.push({ to: '/members', label: 'Members' });
+    nav.push({ to: '/plans', label: 'Plans' });
     nav.push({ to: '/check-in', label: 'Check-in' });
     nav.push({ to: '/billing', label: 'Billing' });
   }
   // Example of a feature-flag-gated nav item.
   if (features('retail_pos')) {
     nav.push({ to: '/retail', label: 'Retail / POS' });
+  }
+  // Admin-only settings (branding, feature toggles).
+  if (user?.role === 'admin') {
+    nav.push({ to: '/settings', label: 'Settings' });
   }
 
   return (

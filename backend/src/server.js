@@ -9,6 +9,11 @@ const { notFound, errorHandler } = require('./middleware/error');
 const app = express();
 
 app.use(cors({ origin: config.corsOrigins }));
+
+// Stripe webhook needs the RAW body to verify the signature, so it is mounted
+// with express.raw BEFORE the JSON parser. Everything else parses JSON.
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }), require('./routes/webhooks'));
+
 app.use(express.json());
 
 // Health check — handy for Railway/Render uptime probes.
@@ -18,6 +23,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tenant', require('./routes/tenants'));
 app.use('/api/members', require('./routes/members'));
+app.use('/api/plans', require('./routes/plans'));
 app.use('/api/session-types', require('./routes/sessionTypes'));
 app.use('/api/sessions', require('./routes/sessions'));
 app.use('/api/bookings', require('./routes/bookings'));

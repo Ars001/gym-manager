@@ -13,6 +13,8 @@ function isEnabled() {
   return Boolean(stripe);
 }
 
+// --- One-off charges -------------------------------------------------------
+
 // Create a one-off PaymentIntent (card charge). Amount is in cents.
 async function createPaymentIntent({ amountCents, currency, description, metadata }) {
   if (!stripe) throw new Error('Stripe is not configured');
@@ -25,4 +27,54 @@ async function createPaymentIntent({ amountCents, currency, description, metadat
   });
 }
 
-module.exports = { stripe, isEnabled, createPaymentIntent };
+// --- Recurring subscriptions ----------------------------------------------
+
+// Create a Product + recurring Price and return the Price id (stored on a plan).
+async function createPrice({ amountCents, currency, interval, productName }) {
+  if (!stripe) throw new Error('Stripe is not configured');
+  const product = await stripe.products.create({ name: productName });
+  const price = await stripe.prices.create({
+    unit_amount: amountCents,
+    currency: currency.toLowerCase(),
+    recurring: { interval }, // 'week' | 'month' | 'year'
+    product: product.id,
+  });
+  return price.id;
+}
+
+// Reuse an existing customer id or create a new Stripe customer for a member.
+async function getOrCreateCustomer({ existingId, email, name }) {
+  if (!stripe) throw new Error('Stripe is not configured');
+  if (existingId) return existingId;
+  const customer = await stripe.customers.create({ email: email || undefined, name });
+  return customer.id;
+}
+
+// Create a subscription. default_incomplete means the first invoice needs the
+// customer to confirm payment; we return the client secret for that.
+async function createSubscription({ customerId, priceId, metadata }) {
+  if (!stripe) throw new Error('Stripe is not configured');
+  return stripe.subscriptions.create({
+    customer: customerId,
+    items: [{ price: priceId }],
+    payment_behavior: 'default_incomplete',
+    metadata,
+    expand: ['latest_invoice.payment_intent'],
+  });
+}
+
+// Verify + parse a webhook payload using the signing secret.
+function constructEvent(rawBody, signature) {
+  if (!stripe) throw new Error('Stripe is not configured');
+  return stripe.webhooks.constructEvent(rawBody, signature, config.stripe.webhookSecret);
+}
+
+module.exports = {
+  stripe,
+  isEnabled,
+  createPaymentIntent,
+  createPrice,
+  getOrCreateCustomer,
+  createSubscription,
+  constructEvent,
+};

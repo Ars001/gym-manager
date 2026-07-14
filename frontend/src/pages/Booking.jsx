@@ -3,6 +3,7 @@
 // so each session shows Book or Cancel correctly and full sessions are blocked.
 
 import { useEffect, useState, useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -84,8 +85,14 @@ export default function Booking() {
               <div className="muted">{new Date(s.starts_at).toLocaleString()}</div>
               <div className="muted">{remaining} spots left</div>
               {booking ? (
-                <button className="btn" style={{ marginTop: 12, background: '#dc2626' }}
-                  onClick={() => cancel(booking.id)}>Cancel booking</button>
+                <div style={{ marginTop: 12 }}>
+                  {/* QR encodes the booking id; staff scan it at check-in. */}
+                  <QRCodeSVG value={booking.id} size={96} />
+                  <div>
+                    <button className="btn" style={{ marginTop: 12, background: '#dc2626' }}
+                      onClick={() => cancel(booking.id)}>Cancel booking</button>
+                  </div>
+                </div>
               ) : (
                 <button className="btn" style={{ marginTop: 12 }}
                   disabled={!memberId || remaining <= 0}
