@@ -44,6 +44,7 @@ export default function Plans() {
   }
 
   async function toggleActive(plan) {
+    if (plan.active && !window.confirm(`Deactivate "${plan.name}"? It won't be offered to new members.`)) return;
     await api.put(`/plans/${plan.id}`, { active: !plan.active }).catch(() => {});
     load();
   }

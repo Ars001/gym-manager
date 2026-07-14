@@ -54,6 +54,7 @@ export default function Schedule() {
   }
 
   async function cancelSession(id) {
+    if (!window.confirm('Cancel this session? Booked members will lose their spot.')) return;
     await api.put(`/sessions/${id}`, { status: 'cancelled' }).catch(() => {});
     load();
   }

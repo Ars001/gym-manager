@@ -2,6 +2,25 @@
 
 A multi-tenant management app for small fitness businesses (independent gyms, CrossFit boxes, yoga/martial-arts studios, personal trainers). One codebase serves many gyms; each gym ("tenant") is configured with data — branding, currency, feature toggles — not code changes. Positioned as an affordable, ownable alternative to Mindbody/Glofox for small, single-location businesses.
 
+## Quick start (Windows — one click)
+
+1. **First time only:** open `backend\.env` and set `DATABASE_URL` to your Neon/Supabase
+   connection string (double-clicking `start.bat` will create the file and open it for you).
+2. **Double-click `start.bat`.** On the first run it installs packages and sets up the
+   database automatically; every run frees the ports, starts both servers, and opens
+   the app in your browser at http://localhost:5173.
+3. Log in with `demo` / `admin@demo.test` / `password123`.
+
+Helper scripts in the project root:
+
+| File | What it does |
+|------|--------------|
+| `start.bat` | One-click launch: installs (first run), starts backend + frontend, opens the browser |
+| `load-demo-data.bat` | Fills the demo gym with realistic sample data (members, sessions, bookings, payments) |
+| `create-desktop-shortcut.bat` | Puts a "Gym Manager" shortcut on your Desktop that runs `start.bat` |
+
+Keep the two server windows open while using the app; close them to stop.
+
 ## Tech stack
 
 - **Frontend:** React (Vite) + React Router + axios

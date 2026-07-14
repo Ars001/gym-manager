@@ -3,6 +3,7 @@
 // so each session shows Book or Cancel correctly and full sessions are blocked.
 
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -48,6 +49,7 @@ export default function Booking() {
   }
 
   async function cancel(bookingId) {
+    if (!window.confirm('Cancel this booking?')) return;
     await api.post(`/bookings/${bookingId}/cancel`).catch(() => {});
     loadBookings();
     refreshSessions();
@@ -61,16 +63,29 @@ export default function Booking() {
     <div>
       <h1>Book a class</h1>
 
+      {/* Step 1 hint for staff: pick who you're booking for. */}
       {!isMember && (
         <div className="card" style={{ marginBottom: 24, maxWidth: 400 }}>
-          <label>Booking for member</label>
-          <select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
-            <option value="">— select a member —</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>
-            ))}
-          </select>
+          <label>Step 1 — booking for which member?</label>
+          {members.length === 0 ? (
+            <p className="muted" style={{ margin: 0 }}>
+              No members yet. <Link to="/members">Add a member first →</Link>
+            </p>
+          ) : (
+            <select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
+              <option value="">— select a member —</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>
+              ))}
+            </select>
+          )}
         </div>
+      )}
+
+      {!isMember && members.length > 0 && (
+        <p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>
+          Step 2 — click <b>Book</b> on a class below.
+        </p>
       )}
 
       {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
@@ -104,7 +119,9 @@ export default function Booking() {
           );
         })}
         {sessions.filter((s) => s.status === 'scheduled').length === 0 &&
-          <p className="muted">No sessions available.</p>}
+          <p className="muted">
+            No classes scheduled yet. <Link to="/schedule">Create a session first →</Link>
+          </p>}
       </div>
     </div>
   );

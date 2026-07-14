@@ -5,6 +5,7 @@
 // All three call the same POST /bookings/:id/check-in endpoint.
 
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 import QrScanner from '../components/QrScanner.jsx';
 
@@ -69,14 +70,20 @@ export default function CheckIn() {
 
       <div className="card" style={{ marginBottom: 24, maxWidth: 400 }}>
         <label>Session roster</label>
-        <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
-          <option value="">— select a session —</option>
-          {sessions.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.title} — {new Date(s.starts_at).toLocaleString()}
-            </option>
-          ))}
-        </select>
+        {sessions.length === 0 ? (
+          <p className="muted" style={{ margin: 0 }}>
+            No upcoming sessions. <Link to="/schedule">Schedule one →</Link>
+          </p>
+        ) : (
+          <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+            <option value="">— select a session —</option>
+            {sessions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title} — {new Date(s.starts_at).toLocaleString()}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {sessionId && (
