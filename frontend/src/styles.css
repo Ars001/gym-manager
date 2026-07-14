@@ -1,0 +1,59 @@
+/* Global styles. Colors reference CSS variables that AuthContext sets from the
+   tenant's branding, so the whole UI re-skins per client automatically. */
+
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #1e293b;
+  --bg: #f8fafc;
+  --border: #e2e8f0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: #0f172a; }
+
+.center { display: grid; place-items: center; height: 100vh; }
+
+/* App shell */
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; background: var(--color-secondary); color: #fff;
+  display: flex; flex-direction: column; padding: 16px;
+}
+.brand { font-size: 18px; font-weight: 700; margin-bottom: 24px; }
+.nav-link {
+  display: block; padding: 10px 12px; color: #cbd5e1; text-decoration: none;
+  border-radius: 8px; margin-bottom: 4px;
+}
+.nav-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-link.active { background: var(--color-primary); color: #fff; }
+.logout {
+  margin-top: auto; background: transparent; color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; cursor: pointer;
+}
+.content { flex: 1; padding: 32px; }
+
+/* Generic UI */
+h1 { margin-top: 0; }
+.card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.stat { font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.muted { color: #64748b; font-size: 14px; }
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
+th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+th { background: #f1f5f9; font-size: 13px; text-transform: uppercase; color: #475569; }
+.btn {
+  background: var(--color-primary); color: #fff; border: none;
+  padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+input, select {
+  padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; width: 100%;
+}
+.form-row { margin-bottom: 12px; }
+label { display: block; font-size: 13px; margin-bottom: 4px; color: #475569; }
+
+/* Login */
+.login-wrap { display: grid; place-items: center; height: 100vh; }
+.login-card { width: 360px; }
+.error { color: #dc2626; font-size: 14px; margin-top: 8px; }

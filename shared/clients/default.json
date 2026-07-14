@@ -1,0 +1,17 @@
+{
+  "_comment": "Reference template for a client/tenant. In this multi-tenant build these values live in the `tenants` DB row (edited via the Settings screen or the seed script). Keep this file as the canonical list of what is configurable per client.",
+  "slug": "demo",
+  "name": "Demo Fitness Studio",
+  "currency": "USD",
+  "branding": {
+    "primary_color": "#2563eb",
+    "secondary_color": "#1e293b",
+    "logo_url": null
+  },
+  "feature_flags": {
+    "retail_pos": false,
+    "mobile_app": false,
+    "multi_location": false,
+    "member_portal": true
+  }
+}

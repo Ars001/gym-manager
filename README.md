@@ -1,0 +1,94 @@
+# Gym Manager
+
+A multi-tenant management app for small fitness businesses (independent gyms, CrossFit boxes, yoga/martial-arts studios, personal trainers). One codebase serves many gyms; each gym ("tenant") is configured with data — branding, currency, feature toggles — not code changes. Positioned as an affordable, ownable alternative to Mindbody/Glofox for small, single-location businesses.
+
+## Tech stack
+
+- **Frontend:** React (Vite) + React Router + axios
+- **Backend:** Node.js + Express
+- **Database:** PostgreSQL (use a free tier like Supabase or Neon)
+- **Payments:** Stripe (card); GoCardless (UK direct debit) can be added later
+- **Hosting target:** backend on Railway/Render, frontend on Vercel
+
+## Folder structure
+
+```
+gym-manager/
+├── backend/                 # Express API
+│   ├── src/
+│   │   ├── config/          # reads env vars once (config/index.js)
+│   │   ├── db/              # pool, schema.sql, setup.js, seed.js
+│   │   ├── middleware/      # auth (JWT + roles), error handling
+│   │   ├── routes/          # one router per resource
+│   │   ├── services/        # stripe wrapper
+│   │   └── server.js        # app entry — wires routes together
+│   └── .env.example
+├── frontend/                # React app (Vite)
+│   ├── src/
+│   │   ├── api/             # axios client (attaches JWT)
+│   │   ├── components/      # Layout (nav respects role + feature flags)
+│   │   ├── config/          # branding defaults + money formatting
+│   │   ├── context/         # AuthContext (user, tenant, branding)
+│   │   ├── pages/           # Dashboard, Members, Schedule, Booking, CheckIn, Billing, Login
+│   │   └── App.jsx          # routes + auth gate
+│   └── .env.example
+├── shared/
+│   └── clients/default.json # reference template of what's configurable per client
+└── README.md
+```
+
+## Data model (generic on purpose)
+
+`tenants` → `users` (admin/staff/member), `members`, `membership_plans`, `session_types`, `sessions`, `bookings`, `payments`. All business tables carry `tenant_id`, and every query is scoped by it so one gym never sees another's data. Concepts are generic (`session_type`, `session`, `membership_plan`) so the same schema fits any gym style.
+
+## Run it locally
+
+Prerequisites: Node.js 18+, and a PostgreSQL database URL (local, or free Supabase/Neon).
+
+### 1. Backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env          # then edit .env: set DATABASE_URL and JWT_SECRET
+npm run db:setup              # create tables from schema.sql
+npm run db:seed               # create the "demo" tenant + admin login
+npm run dev                   # API on http://localhost:4000
+```
+
+Seed login → gym code `demo`, email `admin@demo.test`, password `password123`.
+
+### 2. Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env          # leave VITE_API_BASE_URL empty for local (Vite proxies /api)
+npm run dev                   # app on http://localhost:5173
+```
+
+Open http://localhost:5173 and sign in with the demo credentials above.
+
+## Add a new client / tenant
+
+Because this is multi-tenant, a new client is a new **row**, not a new deployment:
+
+1. Insert a tenant and its first admin user (mirror `backend/src/db/seed.js`), choosing a unique `slug` (the "gym code" used at login).
+2. Log in as that admin and set branding (name, colors, logo), currency, and feature toggles on the Settings screen — or `PUT /api/tenant`.
+3. Feature flags live in `tenants.feature_flags` (JSON), e.g. `retail_pos`, `mobile_app`, `multi_location`. The UI shows/hides features based on these, so re-skinning is configuration only.
+
+`shared/clients/default.json` documents everything that's configurable per client.
+
+## Design principles
+
+- Single monolithic app — no microservices, minimal abstraction.
+- Money stored as integer cents.
+- Popular, well-documented libraries only, so it stays maintainable.
+- Configuration lives in the `tenants` table + `config/`, never scattered/hardcoded.
+
+## Roadmap (next after MVP scaffold)
+
+- Wire booking/cancel and staff check-in actions to their endpoints
+- Session create/edit UI + membership plan management
+- Stripe subscriptions + webhook handling for recurring billing
+- QR check-in; GoCardless for UK direct debit
