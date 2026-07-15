@@ -7,6 +7,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatMoney } from '../config/branding';
 import StatusBadge from '../components/StatusBadge.jsx';
+import { downloadCsv } from '../utils/csv.js';
 
 export default function Billing() {
   const { tenant } = useAuth();
@@ -136,6 +137,15 @@ export default function Billing() {
         </p>
       </form>
 
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 12 }}>
+        <h3 style={{ margin: 0 }}>Payments</h3>
+        <button type="button" className="btn btn-sm btn-ghost" disabled={!payments.length}
+          onClick={() => downloadCsv('payments.csv', payments.map((p) => ({
+            member: p.first_name ? `${p.first_name} ${p.last_name}` : '',
+            amount: (p.amount_cents / 100).toFixed(2), currency: p.currency,
+            type: p.type, status: p.status, date: new Date(p.created_at).toISOString().slice(0, 10),
+          })))}>Export CSV</button>
+      </div>
       <div className="table-wrap scroll">
         <table>
           <thead>

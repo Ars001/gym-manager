@@ -11,16 +11,19 @@ const stripeService = require('../services/stripe');
 const router = express.Router();
 router.use(verifyToken);
 
-// GET /api/payments  — recent payments for this tenant.
+// GET /api/payments?member_id=  — recent payments for this tenant (optionally
+// for one member, used by the member profile page).
 router.get('/', requireRole('admin', 'staff'), async (req, res, next) => {
   try {
+    const { member_id } = req.query;
     const result = await query(
       `SELECT p.*, m.first_name, m.last_name
          FROM payments p LEFT JOIN members m ON m.id = p.member_id
         WHERE p.tenant_id = $1
+          AND ($2::uuid IS NULL OR p.member_id = $2)
         ORDER BY p.created_at DESC
         LIMIT 100`,
-      [req.tenantId]
+      [req.tenantId, member_id || null]
     );
     res.json(result.rows);
   } catch (err) {

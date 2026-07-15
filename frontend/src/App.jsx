@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import SignUp from './pages/SignUp.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
+import MemberProfile from './pages/MemberProfile.jsx';
 import Plans from './pages/Plans.jsx';
 import Schedule from './pages/Schedule.jsx';
 import Booking from './pages/Booking.jsx';
@@ -32,6 +33,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/members/:id" element={<MemberProfile />} />
         <Route path="/plans" element={<Plans />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/booking" element={<Booking />} />

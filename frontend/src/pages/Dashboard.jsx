@@ -8,6 +8,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatMoney } from '../config/branding';
 import { IconUsers, IconDollar, IconCheckSquare, IconTrend, IconCheck } from '../components/icons.jsx';
+import BarChart from '../components/BarChart.jsx';
 
 // One stat tile.
 function Stat({ icon: Icon, label, value, accent }) {
@@ -25,12 +26,14 @@ function Stat({ icon: Icon, label, value, accent }) {
 export default function Dashboard() {
   const { tenant } = useAuth();
   const [data, setData] = useState(null);
+  const [insights, setInsights] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     api.get('/reports/summary')
       .then((res) => setData(res.data))
       .catch((err) => setError(err.response?.data?.error || 'Failed to load report'));
+    api.get('/reports/insights').then((res) => setInsights(res.data)).catch(() => {});
   }, []);
 
   if (error) return <div className="error">{error}</div>;
@@ -79,6 +82,47 @@ export default function Dashboard() {
         <Stat icon={IconCheckSquare} label="Check-ins (30 days)" value={data.attendance.checkins_30d} />
         <Stat icon={IconCheck} label="Total members" value={data.members.total_members} />
       </div>
+
+      {insights && !isEmpty && (
+        <>
+          <div className="page-head" style={{ marginTop: 30 }}>
+            <div><h1 style={{ fontSize: '1.2rem' }}>Insights</h1></div>
+          </div>
+
+          <div className="grid" style={{ marginBottom: 8 }}>
+            <Stat icon={IconDollar} label="Monthly recurring revenue (MRR)"
+              value={formatMoney(insights.mrr_cents, currency)} accent />
+          </div>
+
+          <div className="grid">
+            <div className="card">
+              <h3 style={{ marginTop: 0 }}>Revenue — last 6 months</h3>
+              <BarChart data={insights.revenue_by_month.map((r) => ({ label: r.label, value: Number(r.cents) }))}
+                format={(v) => formatMoney(v, currency)} />
+            </div>
+            <div className="card">
+              <h3 style={{ marginTop: 0 }}>New members — last 8 weeks</h3>
+              <BarChart data={insights.new_members_by_week.map((r) => ({ label: r.label, value: r.count }))} />
+            </div>
+            <div className="card">
+              <h3 style={{ marginTop: 0 }}>Check-ins — last 8 weeks</h3>
+              <BarChart data={insights.attendance_by_week.map((r) => ({ label: r.label, value: r.count }))} />
+            </div>
+            <div className="card">
+              <h3 style={{ marginTop: 0 }}>Active members by plan</h3>
+              {insights.members_by_plan.length ? (
+                <table>
+                  <tbody>
+                    {insights.members_by_plan.map((p, i) => (
+                      <tr key={i}><td>{p.plan}</td><td style={{ textAlign: 'right' }}><b>{p.count}</b></td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <p className="muted">No active members.</p>}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

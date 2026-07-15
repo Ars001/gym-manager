@@ -2,7 +2,9 @@
 // and delete. Plans are loaded to show names and offer them in dropdowns.
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
+import { downloadCsv } from '../utils/csv.js';
 
 const STATUSES = ['active', 'frozen', 'inactive', 'cancelled'];
 const EMPTY = { first_name: '', last_name: '', email: '', phone: '', membership_plan_id: '' };
@@ -111,7 +113,14 @@ export default function Members() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: 12, flexWrap: 'wrap' }}>
         <input placeholder="Search by name or email…" value={search}
           onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 320 }} />
-        <span className="muted">{shown.length} of {members.length} members</span>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span className="muted">{shown.length} of {members.length} members</span>
+          <button type="button" className="btn btn-sm btn-ghost" disabled={!shown.length}
+            onClick={() => downloadCsv('members.csv', shown.map((m) => ({
+              first_name: m.first_name, last_name: m.last_name, email: m.email,
+              phone: m.phone, status: m.status,
+            })))}>Export CSV</button>
+        </div>
       </div>
 
       <div className="table-wrap scroll">
@@ -142,7 +151,7 @@ export default function Members() {
                 </>
               ) : (
                 <>
-                  <td>{m.first_name} {m.last_name}</td>
+                  <td><Link to={`/members/${m.id}`}>{m.first_name} {m.last_name}</Link></td>
                   <td>{m.email || '—'}</td>
                   <td>{m.phone || '—'}</td>
                   <td>
