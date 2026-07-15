@@ -14,17 +14,24 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [slow, setSlow] = useState(false); // shows a "waking up" hint on cold starts
 
   async function onSubmit(e) {
     e.preventDefault();
     setError('');
     setBusy(true);
+    setSlow(false);
+    // If it's taking a while, it's almost certainly the free-tier server waking
+    // up — reassure the user instead of looking stuck. (client.js auto-retries.)
+    const slowTimer = setTimeout(() => setSlow(true), 2500);
     try {
       await login(tenantSlug, email, password);
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed — check your details and that the server is running.');
     } finally {
+      clearTimeout(slowTimer);
       setBusy(false);
+      setSlow(false);
     }
   }
 
@@ -65,8 +72,13 @@ export default function Login() {
           </div>
 
           <button className="btn" style={{ width: '100%', marginTop: 4 }} disabled={busy}>
-            {busy ? 'Signing in…' : 'Sign in'}
+            {busy ? (slow ? 'Waking up server…' : 'Signing in…') : 'Sign in'}
           </button>
+          {busy && slow && (
+            <div className="muted" style={{ marginTop: 10, textAlign: 'center' }}>
+              ⏳ Waking up the server — the first load of the day can take a few seconds.
+            </div>
+          )}
           {error && <div className="error">{error}</div>}
 
           <p className="muted" style={{ marginTop: 16, textAlign: 'center' }}>
