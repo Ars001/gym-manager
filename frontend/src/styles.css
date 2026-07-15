@@ -205,3 +205,42 @@ td select { padding: 6px 9px; font-size: 13px; }
   .backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.4); z-index: 40; }
   .page-head { flex-direction: column; align-items: stretch; }
 }
+
+/* ---------- Polish pass: premium micro-interactions & depth ---------- */
+html { scroll-behavior: smooth; }
+::selection { background: color-mix(in srgb, var(--color-primary) 22%, white); }
+
+/* Refined, unobtrusive scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; border: 2px solid var(--bg); }
+*::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Gentle page entrance */
+.content { animation: fadeUp .28s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Cards: smooth depth; stat tiles lift slightly on hover */
+.card { transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+.stat-ic { background: linear-gradient(135deg,
+  color-mix(in srgb, var(--color-primary) 16%, white),
+  color-mix(in srgb, var(--color-primary) 28%, white)); }
+
+/* Buttons: tactile press */
+.btn { transition: filter .12s, box-shadow .12s, transform .06s, background .12s; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+/* Nav + links + inputs: subtle feedback */
+.nav-link { transition: background .14s ease, color .14s ease; }
+a { transition: color .12s ease; }
+a:hover { text-underline-offset: 2px; }
+input:hover:not(:focus):not([type=color]),
+select:hover:not(:focus),
+textarea:hover:not(:focus) { border-color: var(--text-muted); }
+tbody tr { transition: background .12s ease; }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
