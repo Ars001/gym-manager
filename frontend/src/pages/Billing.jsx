@@ -7,6 +7,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatMoney } from '../config/branding';
 import StatusBadge from '../components/StatusBadge.jsx';
+import MemberPicker from '../components/MemberPicker.jsx';
 import { downloadCsv } from '../utils/csv.js';
 
 export default function Billing() {
@@ -91,10 +92,8 @@ export default function Billing() {
         <div className="grid">
           <div className="form-row">
             <label>Member</label>
-            <select value={sub.member_id} onChange={(e) => setSub({ ...sub, member_id: e.target.value })}>
-              <option value="">— select —</option>
-              {members.map((m) => <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>)}
-            </select>
+            <MemberPicker members={members} value={sub.member_id}
+              onChange={(id) => setSub({ ...sub, member_id: id })} />
           </div>
           <div className="form-row">
             <label>Plan</label>
@@ -112,12 +111,9 @@ export default function Billing() {
         <div className="grid">
           <div className="form-row">
             <label>Member (optional)</label>
-            <select value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })}>
-              <option value="">— none —</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>
-              ))}
-            </select>
+            <MemberPicker members={members} value={form.member_id}
+              onChange={(id) => setForm({ ...form, member_id: id })}
+              placeholder="Search member (optional)…" />
           </div>
           <div className="form-row">
             <label>Amount ({currency})</label>

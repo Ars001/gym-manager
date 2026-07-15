@@ -68,9 +68,6 @@ export default function Dashboard() {
               <li key={to}><Link to={to}>{text}</Link></li>
             ))}
           </ol>
-          <p className="muted" style={{ marginTop: 12 }}>
-            Prefer it pre-filled? Double-click <b>load-demo-data.bat</b> in the project folder, then refresh.
-          </p>
         </div>
       )}
 

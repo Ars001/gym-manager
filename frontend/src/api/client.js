@@ -26,6 +26,17 @@ api.interceptors.response.use(null, async (error) => {
   if (!config) return Promise.reject(error);
 
   const status = error.response?.status;
+
+  // Expired/invalid session: clear the token and return to login. Skipped for
+  // the login request itself, where 401 just means wrong credentials.
+  if (status === 401 && localStorage.getItem('token') && !String(config.url || '').includes('/auth/login')) {
+    localStorage.removeItem('token');
+    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+      window.location.assign('/');
+    }
+    return Promise.reject(error);
+  }
+
   const isTimeout = error.code === 'ECONNABORTED';
   const isNetwork = !error.response; // no response = network error / timeout
   const isServerCold = status === 502 || status === 503 || status === 504;

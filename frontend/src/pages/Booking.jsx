@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext.jsx';
+import MemberPicker from '../components/MemberPicker.jsx';
 
 export default function Booking() {
   const { user } = useAuth();
@@ -77,12 +78,7 @@ export default function Booking() {
               No members yet. <Link to="/members">Add a member first →</Link>
             </p>
           ) : (
-            <select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
-              <option value="">— select a member —</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>
-              ))}
-            </select>
+            <MemberPicker members={members} value={memberId} onChange={setMemberId} />
           )}
         </div>
       )}
