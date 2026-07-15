@@ -52,6 +52,50 @@ router.post('/', requireRole('admin', 'staff'), async (req, res, next) => {
   }
 });
 
+// POST /api/sessions/bulk  (staff/admin) — create many sessions at once.
+// WHY: recurring classes. The frontend expands a weekly pattern into concrete
+// { title, starts_at, ends_at, ... } rows (so timezone handling matches the
+// single-create form) and posts them here.
+router.post('/bulk', requireRole('admin', 'staff'), async (req, res, next) => {
+  try {
+    const { sessions } = req.body;
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+      return res.status(400).json({ error: 'sessions array is required' });
+    }
+    if (sessions.length > 200) {
+      return res.status(400).json({ error: 'Too many sessions (max 200)' });
+    }
+    const created = [];
+    for (const s of sessions) {
+      if (!s.title || !s.starts_at || !s.ends_at) continue;
+      const r = await query(
+        `INSERT INTO sessions (tenant_id, session_type_id, title, instructor, location, starts_at, ends_at, capacity)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        [req.tenantId, s.session_type_id || null, s.title, s.instructor || null,
+         s.location || null, s.starts_at, s.ends_at, s.capacity || 10]
+      );
+      created.push(r.rows[0]);
+    }
+    res.status(201).json({ count: created.length, sessions: created });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/sessions/:id  (staff/admin) — delete a session (and its bookings).
+router.delete('/:id', requireRole('admin', 'staff'), async (req, res, next) => {
+  try {
+    const result = await query(
+      `DELETE FROM sessions WHERE id = $1 AND tenant_id = $2 RETURNING id`,
+      [req.params.id, req.tenantId]
+    );
+    if (!result.rows[0]) return res.status(404).json({ error: 'Session not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // PUT /api/sessions/:id  (staff/admin) — edit or cancel a session.
 router.put('/:id', requireRole('admin', 'staff'), async (req, res, next) => {
   try {

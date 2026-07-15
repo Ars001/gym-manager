@@ -8,18 +8,20 @@ const { verifyToken, requireRole } = require('../middleware/auth');
 const router = express.Router();
 router.use(verifyToken); // all member routes require login
 
-// GET /api/members  — list members for this tenant (optionally filter by status).
+// GET /api/members?status=&search=  — list members, optionally filtered by
+// status and/or a name/email search term.
 router.get('/', requireRole('admin', 'staff'), async (req, res, next) => {
   try {
-    const { status } = req.query;
+    const { status, search } = req.query;
     const result = await query(
       `SELECT id, first_name, last_name, email, phone, status,
               membership_plan_id, joined_at
          FROM members
         WHERE tenant_id = $1
           AND ($2::text IS NULL OR status = $2)
+          AND ($3::text IS NULL OR (first_name ILIKE $3 OR last_name ILIKE $3 OR email ILIKE $3))
         ORDER BY joined_at DESC`,
-      [req.tenantId, status || null]
+      [req.tenantId, status || null, search ? `%${search}%` : null]
     );
     res.json(result.rows);
   } catch (err) {
@@ -79,6 +81,21 @@ router.put('/:id', requireRole('admin', 'staff'), async (req, res, next) => {
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Member not found' });
     res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/members/:id  — remove a member. Their bookings are removed too
+// (FK cascade); past payments are kept but detached (member_id set null).
+router.delete('/:id', requireRole('admin', 'staff'), async (req, res, next) => {
+  try {
+    const result = await query(
+      `DELETE FROM members WHERE id = $1 AND tenant_id = $2 RETURNING id`,
+      [req.params.id, req.tenantId]
+    );
+    if (!result.rows[0]) return res.status(404).json({ error: 'Member not found' });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }
