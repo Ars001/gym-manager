@@ -89,6 +89,18 @@ export default function Layout({ children }) {
         </nav>
 
         <div className="sidebar-footer">
+          {user?.role !== 'member' && (
+            <div className="sub-cta">
+              <div className="sub-cta-title">Want a subscription?</div>
+              <div className="sub-cta-sub">Contact Arslan:</div>
+              <a className="sub-cta-link" href="https://wa.me/12135825569" target="_blank" rel="noreferrer">
+                WhatsApp: +1 (213) 582-5569
+              </a>
+              <a className="sub-cta-link" href="mailto:Muhammadarslan3@outlook.com">
+                Muhammadarslan3@outlook.com
+              </a>
+            </div>
+          )}
           <div className="user-chip">
             <div className="avatar">{initials(user?.email || 'U')}</div>
             <div>

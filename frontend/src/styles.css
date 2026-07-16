@@ -77,6 +77,12 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 45%, transparent); }
 .nav-link.active svg { opacity: 1; }
 .sidebar-footer { margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
+.sub-cta { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 11px 12px; margin-bottom: 12px; }
+.sub-cta-title { font-size: 12.5px; font-weight: 700; color: #fff; }
+.sub-cta-sub { font-size: 11px; color: #93a2b5; margin: 1px 0 6px; }
+.sub-cta-link { display: block; font-size: 11.5px; color: #c3ccd8; margin-top: 3px; word-break: break-word; }
+.sub-cta-link:hover { color: #fff; text-decoration: underline; }
 .user-chip { display: flex; align-items: center; gap: 10px; padding: 6px 8px; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 13px;
   background: color-mix(in srgb, var(--color-primary) 32%, #334155); display: grid; place-items: center; }

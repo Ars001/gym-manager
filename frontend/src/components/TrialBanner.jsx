@@ -42,8 +42,10 @@ export default function TrialBanner() {
         onClick={() => setShowInfo((v) => !v)}>Upgrade</button>
       {showInfo && (
         <div style={{ flexBasis: '100%', fontWeight: 400, marginTop: 4 }}>
-          Paid plans are coming soon — for now your gym keeps working normally.
-          Reach out to upgrade when you’re ready.
+          To take a subscription, contact <b>Arslan</b> —{' '}
+          <a href="https://wa.me/12135825569" target="_blank" rel="noreferrer">WhatsApp +1 (213) 582-5569</a>
+          {' '}·{' '}
+          <a href="mailto:Muhammadarslan3@outlook.com">Muhammadarslan3@outlook.com</a>
         </div>
       )}
     </div>
