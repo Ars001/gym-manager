@@ -72,7 +72,15 @@ export default function Guide() {
           padding: 11px 16px; border-radius: 11px; font-weight: 600; font-size: 14.5px; }
         .guide-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
         .guide-foot { text-align: center; color: var(--text-muted); font-size: 12.5px; margin-top: 34px; }
-        @media (max-width: 560px) { .guide-cards { grid-template-columns: 1fr; } }
+        @media (max-width: 560px) {
+          .guide { padding: 0 14px 48px; }
+          .guide-cards { grid-template-columns: 1fr; }
+          .guide-top { gap: 14px; }
+          .guide-top .btn { width: 100%; text-align: center; justify-content: center; }
+          .guide-demo .btn { width: 100%; text-align: center; justify-content: center; }
+          .guide-contact { padding: 22px 16px; }
+          .guide-chip { width: 100%; justify-content: center; }
+        }
       `}</style>
 
       <div className="guide-col">

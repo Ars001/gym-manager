@@ -108,7 +108,7 @@ h3 { font-size: 15px; font-weight: 600; margin-top: 0; }
 /* ---------- Cards ---------- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 20px; box-shadow: var(--shadow-sm); }
-.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr)); }
 
 /* Stat card */
 .stat-card .stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -249,4 +249,36 @@ tbody tr { transition: background .12s ease; }
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Mobile refinements ---------- */
+/* Safety net: nothing should scroll the page sideways (wide tables get their
+   own scroll container). */
+html, body { overflow-x: hidden; max-width: 100%; }
+
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  .content { padding: 16px 14px; }
+
+  /* iOS zooms in on focus when inputs are < 16px — keep them at 16px on phones. */
+  input, select, textarea { font-size: 16px; padding: 11px 12px; }
+
+  /* Roomier tap targets. */
+  .btn { padding: 11px 16px; }
+  .btn-sm { padding: 9px 12px; font-size: 13px; }
+
+  /* Tables scroll horizontally with momentum; keep cells on one line so columns
+     stay readable instead of squishing. */
+  .table-wrap.scroll { -webkit-overflow-scrolling: touch; }
+  th, td { padding: 11px 13px; white-space: nowrap; }
+  td select { min-width: 118px; }
+
+  /* Tighten large type so headings and stats fit narrow screens. */
+  h1 { font-size: 21px; }
+  .stat { font-size: 24px; }
+  .page-head { gap: 8px; }
+
+  /* Auth + guide: comfortable side padding on small screens. */
+  .auth-form-wrap { padding: 24px 16px; }
+  .card { padding: 16px; }
 }
