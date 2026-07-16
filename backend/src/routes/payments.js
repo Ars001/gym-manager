@@ -7,6 +7,12 @@ const express = require('express');
 const { query } = require('../db/pool');
 const { verifyToken, requireRole } = require('../middleware/auth');
 const stripeService = require('../services/stripe');
+const email = require('../services/email');
+
+// Format integer cents for a receipt line, e.g. "$49.00 USD".
+function moneyText(cents, currency) {
+  return `$${(cents / 100).toFixed(2)} ${currency}`;
+}
 
 const router = express.Router();
 router.use(verifyToken);
@@ -42,9 +48,14 @@ router.post('/charge', requireRole('admin', 'staff'), async (req, res, next) => 
 
     // SECURITY: the member (if given) must belong to this tenant — otherwise a
     // payment row could reference another gym's member.
+    let chargeMember = null;
     if (member_id) {
-      const m = await query(`SELECT 1 FROM members WHERE id = $1 AND tenant_id = $2`, [member_id, req.tenantId]);
+      const m = await query(
+        `SELECT email, first_name FROM members WHERE id = $1 AND tenant_id = $2`,
+        [member_id, req.tenantId]
+      );
       if (!m.rows[0]) return res.status(404).json({ error: 'Member not found' });
+      chargeMember = m.rows[0];
     }
 
     let stripeIntentId = null;
@@ -70,6 +81,17 @@ router.post('/charge', requireRole('admin', 'staff'), async (req, res, next) => 
        VALUES ($1, $2, $3, $4, 'one_off', $5, $6, $7) RETURNING *`,
       [req.tenantId, member_id || null, amount_cents, currency, status, description || null, stripeIntentId]
     );
+
+    // Receipt for completed charges only (pending Stripe charges get confirmed later).
+    if (status === 'succeeded' && chargeMember?.email) {
+      query(`SELECT name FROM tenants WHERE id = $1`, [req.tenantId]).then((t) => {
+        email.paymentReceipt({
+          to: chargeMember.email, gymName: t.rows[0]?.name || 'Your gym',
+          memberName: chargeMember.first_name,
+          amountText: moneyText(amount_cents, currency), description,
+        });
+      }).catch(() => {});
+    }
 
     res.status(201).json({ payment: result.rows[0], clientSecret });
   } catch (err) {
@@ -142,6 +164,18 @@ router.post('/subscribe', requireRole('admin', 'staff'), async (req, res, next) 
       `UPDATE members SET membership_plan_id = $1, status = 'active' WHERE id = $2 AND tenant_id = $3`,
       [plan.id, member.id, req.tenantId]
     );
+
+    // Fire-and-forget subscription receipt.
+    if (member.email) {
+      query(`SELECT name FROM tenants WHERE id = $1`, [req.tenantId]).then((t) => {
+        email.paymentReceipt({
+          to: member.email, gymName: t.rows[0]?.name || 'Your gym',
+          memberName: member.first_name,
+          amountText: moneyText(plan.price_cents, plan.currency),
+          description: `Subscription: ${plan.name}`,
+        });
+      }).catch(() => {});
+    }
 
     res.status(201).json({ ok: true, clientSecret });
   } catch (err) {

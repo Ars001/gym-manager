@@ -6,6 +6,7 @@
 const express = require('express');
 const { pool, query } = require('../db/pool');
 const { verifyToken, requireRole } = require('../middleware/auth');
+const email = require('../services/email');
 
 const router = express.Router();
 router.use(verifyToken);
@@ -88,6 +89,23 @@ router.post('/', async (req, res, next) => {
     );
 
     await client.query('COMMIT');
+
+    // Fire-and-forget booking confirmation (never blocks the response).
+    query(
+      `SELECT m.email, m.first_name, s.title, s.starts_at, t.name AS gym_name
+         FROM members m, sessions s, tenants t
+        WHERE m.id = $1 AND s.id = $2 AND t.id = $3`,
+      [member_id, session_id, req.tenantId]
+    ).then((r) => {
+      const row = r.rows[0];
+      if (row?.email) {
+        email.bookingConfirmation({
+          to: row.email, gymName: row.gym_name, memberName: row.first_name,
+          sessionTitle: row.title, startsAt: row.starts_at,
+        });
+      }
+    }).catch(() => {});
+
     res.status(201).json(insertRes.rows[0]);
   } catch (err) {
     await client.query('ROLLBACK');

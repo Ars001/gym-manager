@@ -82,7 +82,8 @@ export default function Login() {
           {error && <div className="error">{error}</div>}
 
           <p className="muted" style={{ marginTop: 16, textAlign: 'center' }}>
-            New here? <Link to="/signup">Create your gym →</Link>
+            Own a gym? <Link to="/signup">Create your gym →</Link><br />
+            Member of a gym? <Link to="/join">Join with your gym code →</Link>
           </p>
           <p className="muted" style={{ marginTop: 8, textAlign: 'center' }}>
             Demo login — gym code <b>demo</b> · admin@demo.test · password123

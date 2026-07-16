@@ -23,13 +23,17 @@ export default function Layout({ children }) {
   const [open, setOpen] = useState(false); // mobile drawer
 
   // Nav grouped into sections. Each entry: { to, label, icon, end }.
-  const groups = [
-    { title: null, items: [
-      { to: '/', label: 'Dashboard', icon: 'grid', end: true },
-      { to: '/schedule', label: 'Schedule', icon: 'calendar' },
-      { to: '/booking', label: 'Booking', icon: 'ticket' },
-    ] },
-  ];
+  // Members get a simple portal nav; staff/admin get the full app.
+  const groups = user?.role === 'member'
+    ? [{ title: null, items: [
+        { to: '/', label: 'My classes', icon: 'check', end: true },
+        { to: '/booking', label: 'Book a class', icon: 'ticket' },
+      ] }]
+    : [{ title: null, items: [
+        { to: '/', label: 'Dashboard', icon: 'grid', end: true },
+        { to: '/schedule', label: 'Schedule', icon: 'calendar' },
+        { to: '/booking', label: 'Booking', icon: 'ticket' },
+      ] }];
 
   const manage = [];
   if (user?.role !== 'member') {

@@ -27,6 +27,11 @@ const config = {
     secretKey: process.env.STRIPE_SECRET_KEY || '',
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   },
+
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    from: process.env.EMAIL_FROM || 'Gym Manager <onboarding@resend.dev>',
+  },
 };
 
 if (!config.jwt.secret) {

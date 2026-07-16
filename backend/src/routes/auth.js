@@ -9,6 +9,7 @@ const { query } = require('../db/pool');
 const config = require('../config');
 const { verifyToken } = require('../middleware/auth');
 const rateLimit = require('../middleware/rateLimit');
+const mailer = require('../services/email'); // named `mailer`: routes also destructure an `email` field from req.body
 
 const router = express.Router();
 
@@ -109,7 +110,69 @@ router.post('/register', authLimiter, async (req, res, next) => {
       config.jwt.secret,
       { expiresIn: config.jwt.expiresIn }
     );
+
+    mailer.ownerWelcome({ to: email, gymName, slug }); // fire-and-forget
+
     res.status(201).json({ token, role: 'admin', slug });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/join  { tenantSlug, first_name, last_name, email, password }
+// Member self-signup: joins an EXISTING gym by its gym code. If staff already
+// added this person as a member (same email), the login is linked to that
+// record — otherwise a fresh member record is created (active, no plan yet).
+router.post('/join', authLimiter, async (req, res, next) => {
+  try {
+    const { tenantSlug, first_name, last_name, email, password } = req.body;
+    if (!tenantSlug || !first_name || !last_name || !email || !password) {
+      return res.status(400).json({ error: 'Gym code, name, email and password are required' });
+    }
+    if (String(password).length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const tenantRes = await query(`SELECT id FROM tenants WHERE slug = $1`, [tenantSlug]);
+    const tenant = tenantRes.rows[0];
+    if (!tenant) return res.status(404).json({ error: 'Gym not found — check the gym code' });
+
+    const existingUser = await query(
+      `SELECT 1 FROM users WHERE tenant_id = $1 AND email = $2`, [tenant.id, email]
+    );
+    if (existingUser.rows[0]) {
+      return res.status(409).json({ error: 'An account with this email already exists — sign in instead' });
+    }
+
+    // Link to the staff-created member record if one matches this email.
+    let memberId;
+    const existingMember = await query(
+      `SELECT id FROM members WHERE tenant_id = $1 AND email = $2 LIMIT 1`, [tenant.id, email]
+    );
+    if (existingMember.rows[0]) {
+      memberId = existingMember.rows[0].id;
+    } else {
+      const m = await query(
+        `INSERT INTO members (tenant_id, first_name, last_name, email, status)
+         VALUES ($1, $2, $3, $4, 'active') RETURNING id`,
+        [tenant.id, first_name, last_name, email]
+      );
+      memberId = m.rows[0].id;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const userRes = await query(
+      `INSERT INTO users (tenant_id, email, password_hash, role, member_id)
+       VALUES ($1, $2, $3, 'member', $4) RETURNING id`,
+      [tenant.id, email, passwordHash, memberId]
+    );
+
+    const token = jwt.sign(
+      { sub: userRes.rows[0].id, tenantId: tenant.id, role: 'member', memberId },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn }
+    );
+    res.status(201).json({ token, role: 'member' });
   } catch (err) {
     next(err);
   }

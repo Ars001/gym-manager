@@ -60,6 +60,13 @@ export function AuthProvider({ children }) {
     return res.data.slug;
   }
 
+  // Member self-signup: join an existing gym by its gym code, then log in.
+  async function joinGym(fields) {
+    const res = await api.post('/auth/join', fields);
+    localStorage.setItem('token', res.data.token);
+    await loadSession();
+  }
+
   function logout() {
     localStorage.removeItem('token');
     setUser(null);
@@ -72,7 +79,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, tenant, loading, login, register, logout, features, reload: loadSession }}>
+    <AuthContext.Provider value={{ user, tenant, loading, login, register, joinGym, logout, features, reload: loadSession }}>
       {children}
     </AuthContext.Provider>
   );

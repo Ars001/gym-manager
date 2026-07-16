@@ -7,6 +7,8 @@ import { useAuth } from './context/AuthContext.jsx';
 import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
 import SignUp from './pages/SignUp.jsx';
+import JoinGym from './pages/JoinGym.jsx';
+import MyClasses from './pages/MyClasses.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
 import MemberProfile from './pages/MemberProfile.jsx';
@@ -24,8 +26,20 @@ export default function App() {
   if (!user) return (
     <Routes>
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/join" element={<JoinGym />} />
       <Route path="*" element={<Login />} />
     </Routes>
+  );
+
+  // Member portal: members only see their own classes + booking.
+  if (user.role === 'member') return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<MyClasses />} />
+        <Route path="/booking" element={<Booking />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
   );
 
   return (
