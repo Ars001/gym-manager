@@ -8,11 +8,15 @@ const jwt = require('jsonwebtoken');
 const { query } = require('../db/pool');
 const config = require('../config');
 const { verifyToken } = require('../middleware/auth');
+const rateLimit = require('../middleware/rateLimit');
 
 const router = express.Router();
 
+// Throttle credential guessing / signup spam (20 attempts per 10 min per IP).
+const authLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 20 });
+
 // POST /api/auth/login  { tenantSlug, email, password }
-router.post('/login', async (req, res, next) => {
+router.post('/login', authLimiter, async (req, res, next) => {
   try {
     const { tenantSlug, email, password } = req.body;
     if (!tenantSlug || !email || !password) {
@@ -66,7 +70,7 @@ router.get('/me', verifyToken, async (req, res, next) => {
 // Self-service gym signup: creates a new tenant (gym) + its first admin user and
 // returns a JWT so the owner is logged in immediately. The gym's slug — the
 // "gym code" used to log in later — is derived from the name and made unique.
-router.post('/register', async (req, res, next) => {
+router.post('/register', authLimiter, async (req, res, next) => {
   try {
     const { gymName, email, password, currency } = req.body;
     if (!gymName || !email || !password) {

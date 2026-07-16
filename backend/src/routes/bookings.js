@@ -61,6 +61,16 @@ router.post('/', async (req, res, next) => {
       return res.status(404).json({ error: 'Session not found or not open for booking' });
     }
 
+    // SECURITY: the member must belong to this tenant (blocks cross-tenant ids).
+    const memberRes = await client.query(
+      `SELECT 1 FROM members WHERE id = $1 AND tenant_id = $2`,
+      [member_id, req.tenantId]
+    );
+    if (!memberRes.rows[0]) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
     const countRes = await client.query(
       `SELECT COUNT(*)::int AS taken FROM bookings
         WHERE session_id = $1 AND status IN ('booked', 'attended')`,

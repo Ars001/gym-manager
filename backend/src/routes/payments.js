@@ -40,6 +40,13 @@ router.post('/charge', requireRole('admin', 'staff'), async (req, res, next) => 
       return res.status(400).json({ error: 'amount_cents must be a positive integer' });
     }
 
+    // SECURITY: the member (if given) must belong to this tenant — otherwise a
+    // payment row could reference another gym's member.
+    if (member_id) {
+      const m = await query(`SELECT 1 FROM members WHERE id = $1 AND tenant_id = $2`, [member_id, req.tenantId]);
+      if (!m.rows[0]) return res.status(404).json({ error: 'Member not found' });
+    }
+
     let stripeIntentId = null;
     let clientSecret = null;
     let status = 'pending';

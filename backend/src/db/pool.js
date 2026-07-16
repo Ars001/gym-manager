@@ -11,6 +11,12 @@ const pool = new Pool({
   ssl: config.databaseUrl && config.databaseUrl.includes('localhost')
     ? false
     : { rejectUnauthorized: false },
+  // RELIABILITY: on serverless hosting many function instances can run at once
+  // and each gets its own pool — keep it tiny so the database's connection
+  // limit isn't exhausted, and give up quickly instead of hanging forever.
+  max: 3,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 10000,
 });
 
 // Thin wrapper so callers don't import the pool object everywhere.

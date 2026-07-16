@@ -16,7 +16,10 @@ const config = {
   databaseUrl: process.env.DATABASE_URL,
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-only-insecure-secret',
+    // SECURITY: in production a missing JWT_SECRET must be a hard failure —
+    // falling back to a known string would let anyone forge login tokens.
+    secret: process.env.JWT_SECRET
+      || (process.env.NODE_ENV === 'production' ? null : 'dev-only-insecure-secret'),
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
 
@@ -25,5 +28,9 @@ const config = {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   },
 };
+
+if (!config.jwt.secret) {
+  throw new Error('JWT_SECRET environment variable must be set in production');
+}
 
 module.exports = config;

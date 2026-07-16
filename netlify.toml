@@ -34,3 +34,13 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Security headers on every response. Camera stays allowed on our own origin
+# because the check-in page uses it to scan QR codes.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self), microphone=(), geolocation=()"
