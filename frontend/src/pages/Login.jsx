@@ -85,6 +85,9 @@ export default function Login() {
             Own a gym? <Link to="/signup">Create your gym →</Link>
           </p>
           <p className="muted" style={{ marginTop: 8, textAlign: 'center' }}>
+            New to Gym Manager? <Link to="/guide">See how it works →</Link>
+          </p>
+          <p className="muted" style={{ marginTop: 8, textAlign: 'center' }}>
             Demo login — gym code <b>demo</b> · admin@demo.test · password123
           </p>
         </form>

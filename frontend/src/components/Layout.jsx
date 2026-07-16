@@ -3,7 +3,7 @@
 // with retail/POS disabled simply won't see that link — configuration, not code.
 
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { initials } from '../config/branding';
 import TrialBanner from './TrialBanner.jsx';
@@ -18,7 +18,7 @@ const ICONS = {
   tag: IconTag, check: IconCheckSquare, card: IconCard, settings: IconSettings, store: IconStore,
 };
 
-export default function Layout({ children }) {
+export default function Layout() {
   const { user, tenant, logout, features } = useAuth();
   const [open, setOpen] = useState(false); // mobile drawer
 
@@ -115,7 +115,7 @@ export default function Layout({ children }) {
       <div className="app-main">
         <main className="content">
           <TrialBanner />
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

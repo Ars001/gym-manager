@@ -1,6 +1,7 @@
 // Route table + auth gate.
-// WHY: keeps routing in one place. Unauthenticated users see only Login; once
-// logged in they get the app shell (Layout) with the MVP pages as children.
+// WHY: keeps routing in one place. /guide is public (shareable, no login).
+// Otherwise: unauthenticated users get Login/SignUp/Join; members get their
+// portal; staff/admin get the full app — both inside the Layout shell.
 
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
@@ -8,6 +9,7 @@ import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
 import SignUp from './pages/SignUp.jsx';
 import JoinGym from './pages/JoinGym.jsx';
+import Guide from './pages/Guide.jsx';
 import MyClasses from './pages/MyClasses.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
@@ -23,39 +25,38 @@ export default function App() {
   const { user, loading } = useAuth();
 
   if (loading) return <div className="center">Loading…</div>;
-  if (!user) return (
-    <Routes>
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/join" element={<JoinGym />} />
-      <Route path="*" element={<Login />} />
-    </Routes>
-  );
-
-  // Member portal: members only see their own classes + booking.
-  if (user.role === 'member') return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<MyClasses />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
-  );
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/members/:id" element={<MemberProfile />} />
-        <Route path="/plans" element={<Plans />} />
-        <Route path="/schedule" element={<Schedule />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/check-in" element={<CheckIn />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      {/* Public — no login required, shareable link */}
+      <Route path="/guide" element={<Guide />} />
+
+      {!user ? (
+        <>
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/join" element={<JoinGym />} />
+          <Route path="*" element={<Login />} />
+        </>
+      ) : user.role === 'member' ? (
+        <Route element={<Layout />}>
+          <Route path="/" element={<MyClasses />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      ) : (
+        <Route element={<Layout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/members/:id" element={<MemberProfile />} />
+          <Route path="/plans" element={<Plans />} />
+          <Route path="/schedule" element={<Schedule />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route path="/check-in" element={<CheckIn />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      )}
+    </Routes>
   );
 }
