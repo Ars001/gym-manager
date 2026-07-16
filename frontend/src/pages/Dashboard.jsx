@@ -108,7 +108,7 @@ export default function Dashboard() {
             <div className="card">
               <h3 style={{ marginTop: 0 }}>Active members by plan</h3>
               {insights.members_by_plan.length ? (
-                <table>
+                <table style={{ width: '100%' }}>
                   <tbody>
                     {insights.members_by_plan.map((p, i) => (
                       <tr key={i}><td>{p.plan}</td><td style={{ textAlign: 'right' }}><b>{p.count}</b></td></tr>

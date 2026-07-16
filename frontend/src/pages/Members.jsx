@@ -112,8 +112,8 @@ export default function Members() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: 12, flexWrap: 'wrap' }}>
         <input placeholder="Search by name or email…" value={search}
-          onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 320 }} />
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          onChange={(e) => setSearch(e.target.value)} style={{ flex: '1 1 200px', maxWidth: 360 }} />
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
           <span className="muted">{shown.length} of {members.length} members</span>
           <button type="button" className="btn btn-sm btn-ghost" disabled={!shown.length}
             onClick={() => downloadCsv('members.csv', shown.map((m) => ({
